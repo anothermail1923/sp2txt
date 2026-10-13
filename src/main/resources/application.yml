@@ -1,5 +1,5 @@
 server:
-  port: ${PORT:8080}
+  port: ${PORT:8085}
 
 speech:
   # Directory of the extracted Vosk model (relative to the working directory).
