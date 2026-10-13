@@ -1,4 +1,7 @@
-package com.example.speech;
+package com.example.speech.config;
+
+import com.example.speech.controller.SpeechWebSocketHandler;
+import com.example.speech.interceptor.TokenHandshakeInterceptor;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,26 +12,27 @@ import org.springframework.web.socket.server.standard.ServletServerContainerFact
 
 @Configuration
 @EnableWebSocket
-public class SpeechWebSocketConfig implements WebSocketConfigurer {
+public class WebSocketConfig implements WebSocketConfigurer {
 
     public static final String ENDPOINT = "/ws/speech";
 
     private final SpeechWebSocketHandler handler;
+    private final TokenHandshakeInterceptor tokenInterceptor;
     private final SpeechProperties properties;
 
-    public SpeechWebSocketConfig(
+    public WebSocketConfig(
             SpeechWebSocketHandler handler,
+            TokenHandshakeInterceptor tokenInterceptor,
             SpeechProperties properties) {
         this.handler = handler;
+        this.tokenInterceptor = tokenInterceptor;
         this.properties = properties;
     }
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        // Native mobile apps normally send no Origin header and are not affected
-        // by this list; it only restricts which browser pages may connect.
         registry.addHandler(handler, ENDPOINT)
-                .addInterceptors(new TokenHandshakeInterceptor(properties))
+                .addInterceptors(tokenInterceptor)
                 .setAllowedOriginPatterns(
                         properties.allowedOriginPatterns().toArray(String[]::new));
     }
@@ -44,3 +48,4 @@ public class SpeechWebSocketConfig implements WebSocketConfigurer {
         return container;
     }
 }
+

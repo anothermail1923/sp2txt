@@ -1,4 +1,4 @@
-package com.example.speech;
+package com.example.speech.config;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -15,12 +15,12 @@ import java.util.List;
  * Settings for the speech service, bound from the {@code speech.*} properties.
  *
  * @param modelPath             directory of the extracted Vosk model
- * @param sampleRate            sample rate (Hz) of the mono signed 16-bit PCM audio clients stream
+ * @param sampleRate            sample rate (Hz) of the mono signed 16-bit PCM audio
  * @param maxSessions           maximum number of simultaneous WebSocket sessions
- * @param maxBinaryMessageBytes largest accepted audio chunk; bigger messages close the session
+ * @param maxBinaryMessageBytes largest accepted audio chunk
  * @param idleTimeout           sessions with no traffic for this long are closed
- * @param allowedOriginPatterns browser origins allowed to connect (native apps send no Origin)
- * @param authToken             optional shared token clients must present; blank disables the check
+ * @param allowedOriginPatterns browser origins allowed to connect
+ * @param authToken             optional shared token; blank disables the check
  */
 @Validated
 @ConfigurationProperties("speech")
@@ -37,3 +37,4 @@ public record SpeechProperties(
         return authToken != null && !authToken.isBlank();
     }
 }
+
