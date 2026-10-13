@@ -1,0 +1,41 @@
+<!doctype html>
+<meta charset="utf-8">
+<button id="go">Start</button> <button id="stop">Stop</button>
+<pre id="out"></pre>
+<script>
+    const out = document.getElementById('out');
+    let ws, ctx, node, stream;
+    const log = s => { out.textContent += s + '\n'; };
+    document.getElementById('go').onclick = async () => {
+        try {
+            // Add ?token=YOUR_TOKEN to the URL only if SPEECH_AUTH_TOKEN is set
+            ws = new WebSocket('ws://localhost:8080/ws/speech');
+            ws.onmessage = e => { const m = JSON.parse(e.data); log(m.type + ': ' + (m.text || '')); };
+            await new Promise((resolve, reject) => {
+                ws.onopen = resolve;
+                ws.onerror = () => reject(new Error('WebSocket failed (check server running, origin, token)'));
+                ws.onclose = e => log('closed: ' + e.code + ' ' + e.reason);
+            });
+            log('connected');
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            ctx = new AudioContext({ sampleRate: 16000 });
+            const src = ctx.createMediaStreamSource(stream);
+            node = ctx.createScriptProcessor(4096, 1, 1);
+            node.onaudioprocess = e => {
+                const f = e.inputBuffer.getChannelData(0), pcm = new Int16Array(f.length);
+                for (let i = 0; i < f.length; i++) pcm[i] = Math.max(-1, Math.min(1, f[i])) * 32767;
+                if (ws.readyState === 1) ws.send(pcm.buffer);
+            };
+            src.connect(node); node.connect(ctx.destination);
+        } catch (e) {
+            log('ERROR: ' + e.message);
+        }
+    };
+    document.getElementById('stop').onclick = () => {
+        try {
+            ws.send('STOP'); node.disconnect(); stream.getTracks().forEach(t => t.stop()); ctx.close();
+        } catch (e) {
+            log('ERROR: ' + e.message);
+        }
+    };
+</script>
