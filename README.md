@@ -272,25 +272,37 @@ server:
 - **Accuracy:** this uses a pretrained model as-is; test it against your users'
   speech, microphones and noise conditions, and switch models if needed.
 
+## Testing
+
+For a detailed step-by-step guide on testing with a browser microphone, Python script, or unit tests, see **[TESTING.md](TESTING.md)**.
+
+Quick automated tests (no Vosk model required):
+```bash
+mvn test
+```
+
 ## Project layout
 
 ```
 ├── pom.xml
+├── TESTING.md                       # Complete testing & troubleshooting guide
+├── testing/
+│   └── test.html                    # Browser live microphone test client
 ├── models/                          # Vosk models (git-ignored)
 ├── scripts/
 │   ├── download-model.sh
-│   └── stream_wav.py                # dev test client
+│   └── stream_wav.py                # Python test client
 └── src/
     ├── main/java/com/example/speech/
     │   ├── SpeechApplication.java
-    │   ├── SpeechProperties.java    # speech.* settings
-    │   ├── SpeechConfig.java        # loads the model once
-    │   ├── SpeechWebSocketConfig.java
-    │   ├── SpeechWebSocketHandler.java
-    │   ├── TokenHandshakeInterceptor.java
-    │   ├── recognizer/              # engine abstraction + Vosk implementation
-    │   └── web/StatusController.java
+    │   ├── config/                  # SpeechConfig, SpeechProperties, WebSocketConfig
+    │   ├── controller/              # StatusController, SpeechWebSocketHandler
+    │   ├── service/                 # SpeechRecognitionService, SessionService, etc.
+    │   ├── repository/              # SessionRepository
+    │   ├── model/                   # SpeechSession
+    │   ├── dto/                     # StatusResponse, AudioFormat
+    │   ├── interceptor/             # TokenHandshakeInterceptor
+    │   └── recognizer/              # Vosk model & recognizer wrappers
     └── test/java/com/example/speech/  # WebSocket integration tests (fake engine)
 ```
 
-Run the tests with `mvn test`; they use a fake recognizer, so no model is needed.

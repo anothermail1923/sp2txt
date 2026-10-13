@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Speech-to-Text Live Test</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; }
+        button { font-size: 1rem; padding: 0.5rem 1rem; margin-right: 0.5rem; cursor: pointer; }
+        pre { background: #f4f4f4; padding: 1rem; border-radius: 4px; min-height: 120px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h2>Live Speech-to-Text Test Client</h2>
+    <p>Make sure the backend is running with <code>SPEECH_ALLOWED_ORIGINS=http://localhost:8090</code>.</p>
+    <button id="go">Start Recording</button>
+    <button id="stop">Stop</button>
+    <pre id="out"></pre>
+
+    <script>
+        const out = document.getElementById('out');
+        let ws, ctx, node, stream;
+
+        const log = s => { out.textContent += s + '\n'; };
+
+        document.getElementById('go').onclick = async () => {
+            try {
+                // If SPEECH_AUTH_TOKEN is configured on the backend, append '?token=YOUR_TOKEN'
+                const wsUrl = 'ws://localhost:8080/ws/speech';
+                log('Connecting to ' + wsUrl + ' ...');
+                ws = new WebSocket(wsUrl);
+
+                ws.onmessage = e => {
+                    const m = JSON.parse(e.data);
+                    log(m.type + ': ' + (m.text || ''));
+                };
+
+                await new Promise((resolve, reject) => {
+                    ws.onopen = resolve;
+                    ws.onerror = () => reject(new Error('WebSocket connection failed. Verify the backend is running, the origin is allowed (SPEECH_ALLOWED_ORIGINS), and authentication token if required.'));
+                    ws.onclose = e => log('closed: ' + e.code + ' ' + (e.reason || ''));
+                });
+
+                log('Connected! Requesting microphone access...');
+                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                log('Microphone active. Speak now...');
+
+                ctx = new AudioContext({ sampleRate: 16000 });
+                const src = ctx.createMediaStreamSource(stream);
+                node = ctx.createScriptProcessor(4096, 1, 1);
+
+                node.onaudioprocess = e => {
+                    const f = e.inputBuffer.getChannelData(0);
+                    const pcm = new Int16Array(f.length);
+                    for (let i = 0; i < f.length; i++) {
+                        pcm[i] = Math.max(-1, Math.min(1, f[i])) * 32767;
+                    }
+                    if (ws.readyState === WebSocket.OPEN) {
+                        ws.send(pcm.buffer);
+                    }
+                };
+
+                src.connect(node);
+                node.connect(ctx.destination);
+            } catch (e) {
+                log('ERROR: ' + e.message);
+            }
+        };
+
+        document.getElementById('stop').onclick = () => {
+            try {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send('STOP');
+                }
+                if (node) node.disconnect();
+                if (stream) stream.getTracks().forEach(t => t.stop());
+                if (ctx) ctx.close();
+                log('Recording stopped.');
+            } catch (e) {
+                log('ERROR: ' + e.message);
+            }
+        };
+    </script>
+</body>
+</html>
+
