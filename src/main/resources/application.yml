@@ -1,0 +1,23 @@
+server:
+  port: ${PORT:8080}
+
+speech:
+  # Directory of the extracted Vosk model (relative to the working directory).
+  model-path: ${SPEECH_MODEL_PATH:models/vosk-model-small-en-us-0.15}
+  # Clients must stream mono, signed 16-bit little-endian PCM at this rate.
+  sample-rate: 16000
+  # Simultaneous WebSocket sessions; extra clients get an error event and close code 1008.
+  max-sessions: ${SPEECH_MAX_SESSIONS:20}
+  # Largest accepted audio chunk; bigger messages close the session (code 1009).
+  max-binary-message-bytes: 65536
+  idle-timeout: 60s
+  # Browser origins allowed to connect. Native mobile apps send no Origin
+  # header and are unaffected. Example: https://192.168.1.20:8443
+  allowed-origin-patterns: ${SPEECH_ALLOWED_ORIGINS:}
+  # Optional shared secret. When set, clients must send
+  # "Authorization: Bearer <token>" or "?token=<token>" on the handshake.
+  auth-token: ${SPEECH_AUTH_TOKEN:}
+
+logging:
+  level:
+    com.example.speech: INFO
