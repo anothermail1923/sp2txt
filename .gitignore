@@ -1,0 +1,16 @@
+target/
+*.class
+*.log
+
+# Downloaded Vosk models are large binaries; keep them out of git.
+models/*
+!models/README.md
+
+# TLS keystores used for local HTTPS testing
+*.p12
+*.jks
+
+.idea/
+*.iml
+.vscode/
+.DS_Store
