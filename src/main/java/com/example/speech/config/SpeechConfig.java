@@ -16,14 +16,10 @@ public class SpeechConfig {
 
     /** Loads the Vosk model once at startup; each session gets its own recognizer. */
     @Bean(destroyMethod = "close")
-    public RecognizerFactory recognizerFactory(
-            SpeechProperties properties,
-            ObjectMapper mapper) throws IOException {
+    public RecognizerFactory recognizerFactory(SpeechProperties properties, ObjectMapper mapper) throws IOException {
 
-        return new VoskRecognizerFactory(
-                Path.of(properties.modelPath()),
-                properties.sampleRate(),
-                mapper);
+        return new VoskRecognizerFactory(Path.of(properties.modelPath()), properties.sampleRate(), mapper,
+                properties.warmRecognizers());
     }
 }
 

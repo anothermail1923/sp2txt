@@ -17,6 +17,8 @@ speech:
   # Optional shared secret. When set, clients must send
   # "Authorization: Bearer <token>" or "?token=<token>" on the handshake.
   auth-token: ${SPEECH_AUTH_TOKEN:}
+  # Recognizers built ahead of time (each takes ~300 ms to build), so a dictation starts at once.
+  warm-recognizers: ${SPEECH_WARM_RECOGNIZERS:2}
 
 logging:
   level:

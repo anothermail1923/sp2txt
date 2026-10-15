@@ -33,9 +33,7 @@ public class SpeechWebSocketHandler extends AbstractWebSocketHandler {
     private final SessionService sessionService;
     private final SpeechRecognitionService recognitionService;
 
-    public SpeechWebSocketHandler(
-            SessionService sessionService,
-            SpeechRecognitionService recognitionService) {
+    public SpeechWebSocketHandler(SessionService sessionService, SpeechRecognitionService recognitionService) {
         this.sessionService = sessionService;
         this.recognitionService = recognitionService;
     }

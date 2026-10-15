@@ -21,6 +21,7 @@ import java.util.List;
  * @param idleTimeout           sessions with no traffic for this long are closed
  * @param allowedOriginPatterns browser origins allowed to connect
  * @param authToken             optional shared token; blank disables the check
+ * @param warmRecognizers       recognizers built ahead of time, so dictation starts instantly
  */
 @Validated
 @ConfigurationProperties("speech")
@@ -31,7 +32,8 @@ public record SpeechProperties(
         @DefaultValue("65536") @Min(1024) int maxBinaryMessageBytes,
         @DefaultValue("60s") Duration idleTimeout,
         @DefaultValue List<String> allowedOriginPatterns,
-        @DefaultValue("") String authToken) {
+        @DefaultValue("") String authToken,
+        @DefaultValue("2") @Min(0) int warmRecognizers) {
 
     public boolean authEnabled() {
         return authToken != null && !authToken.isBlank();

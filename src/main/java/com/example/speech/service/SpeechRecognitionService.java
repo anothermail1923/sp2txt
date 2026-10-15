@@ -47,7 +47,7 @@ public class SpeechRecognitionService {
             } catch (Exception e) {
                 log.error("Could not create recognizer for session {}", speech.getOut().getId(), e);
                 sendError(speech, "Could not start recognition");
-                closeQuietly(speech.getOut(), CloseStatus.SERVER_ERROR);
+                closeQuietly(speech.getOut());
                 return;
             }
             speech.setLastPartial("");
@@ -168,9 +168,9 @@ public class SpeechRecognitionService {
         }
     }
 
-    private static void closeQuietly(WebSocketSession session, CloseStatus status) {
+    private static void closeQuietly(WebSocketSession session) {
         try {
-            session.close(status);
+            session.close(CloseStatus.SERVER_ERROR);
         } catch (IOException e) {
             log.debug("Failed to close session {}", session.getId(), e);
         }
